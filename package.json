@@ -1,7 +1,7 @@
 {
   "name": "turbo-queue",
   "scripts": {
-    "dev:api": "bun run --hot src/index.ts",
+    "dev:api": "bun run --hot src/api.ts",
     "dev:worker": "bun run --hot src/worker.ts"
   },
   "dependencies": {

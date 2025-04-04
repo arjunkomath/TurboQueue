@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import Redis from "ioredis";
+import { REDIS_SET_KEY } from "./data";
 
 const app = new Hono();
 
@@ -19,7 +20,7 @@ app.post("/enqueue", async (c) => {
   }
 
   const jobJson = JSON.stringify({ url, payload });
-  const result = await redis.zadd("tq:job_schedule", Date.now(), jobJson);
+  const result = await redis.zadd(REDIS_SET_KEY, Date.now(), jobJson);
 
   return c.json({ status: "Job enqueued", result });
 });
@@ -31,7 +32,7 @@ app.post("/schedule", async (c) => {
   }
 
   const jobJson = JSON.stringify({ url, payload });
-  const result = await redis.zadd("tq:job_schedule", executeAt, jobJson);
+  const result = await redis.zadd(REDIS_SET_KEY, executeAt, jobJson);
 
   return c.json({ status: "Job scheduled", result });
 });

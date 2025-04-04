@@ -1,24 +1,15 @@
-import { Hono } from "hono";
 import Redis from "ioredis";
-
-const app = new Hono();
-
-app.get("/", (c) => {
-  return c.json({
-    server: "Turbo Queue Worker",
-    status: "ok",
-  });
-});
+import { REDIS_SET_KEY } from "./data";
 
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
 
 async function worker() {
   const now = Date.now();
-  const jobs = await redis.zrangebyscore("tq:job_schedule", 0, now);
+  const jobs = await redis.zrangebyscore(REDIS_SET_KEY, 0, now);
 
   if (jobs.length > 0) {
     console.log(`Processing ${jobs.length} jobs`);
-    await redis.zremrangebyscore("tq:job_schedule", 0, now);
+    await redis.zremrangebyscore(REDIS_SET_KEY, 0, now);
 
     for (const jobJson of jobs) {
       try {
@@ -26,7 +17,7 @@ async function worker() {
         console.log(`Processing job for ${job.url}`);
       } catch (error) {
         console.error("Error processing job:", error);
-        await redis.zadd("tq:job_schedule", Date.now() + 5000, jobJson);
+        await redis.zadd(REDIS_SET_KEY, Date.now() + 5000, jobJson);
       }
     }
   }
